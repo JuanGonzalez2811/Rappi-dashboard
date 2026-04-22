@@ -9,9 +9,8 @@ env/
 # Streamlit secrets (never commit API keys)
 .streamlit/secrets.toml
 
-# Data files (too large for repo)
-data/
-*.csv
+# OS
+*.DS_Store
 
 # OS
 .DS_Store

@@ -5,7 +5,7 @@ from datetime import datetime
 import re
 
 
-DATA_DIR = os.path.expanduser("~/Downloads/Archivo")
+DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 
 
 def parse_timestamp(ts_str):
