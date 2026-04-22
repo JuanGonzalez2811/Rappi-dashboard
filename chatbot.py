@@ -1,3 +1,5 @@
+import os
+import streamlit as st
 from groq import Groq
 
 _client = None
@@ -6,7 +8,8 @@ _client = None
 def get_client():
     global _client
     if _client is None:
-        _client = Groq()
+        api_key = st.secrets.get("GROQ_API_KEY") or os.environ.get("GROQ_API_KEY")
+        _client = Groq(api_key=api_key)
     return _client
 
 
