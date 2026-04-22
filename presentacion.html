@@ -154,6 +154,34 @@
   .flow-box small { display: block; color: #555; font-size: 0.65rem; margin-top: 2px; }
   .arrow { color: #FF441C; font-size: 1.2rem; padding: 0 4px; }
 
+  /* ── Screenshots ── */
+  .screenshot {
+    border-radius: 10px;
+    border: 1px solid #252838;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    width: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .screenshot-full {
+    border-radius: 10px;
+    border: 1px solid #252838;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    max-height: 62vh;
+    width: 100%;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+    margin-top: 16px;
+  }
+  .img-caption {
+    font-size: 0.68rem;
+    color: #444;
+    text-align: center;
+    margin-top: 6px;
+    letter-spacing: .04em;
+  }
+
   /* ── Cover specific ── */
   .cover-sub {
     font-size: 1rem;
@@ -204,14 +232,20 @@
   <div class="tag">Contexto</div>
   <div class="accent-line"></div>
   <h2>¿Qué problema resuelve?</h2>
-  <div class="grid-2">
-    <div class="card">
-      <h3>El dato</h3>
-      <p>La métrica <code>synthetic_monitoring_visible_stores</code> mide cada 10 segundos cuántos puntos de venta son visibles para los usuarios. Los datos viven en 201 archivos CSV descargados del portal de partners.</p>
+  <div class="grid-2" style="align-items:start">
+    <div>
+      <div class="card" style="margin-bottom:16px">
+        <h3>El dato</h3>
+        <p>La métrica <code>synthetic_monitoring_visible_stores</code> mide cada 10 segundos cuántos puntos de venta son visibles para los usuarios. 201 archivos CSV del portal de partners.</p>
+      </div>
+      <div class="card">
+        <h3>La solución</h3>
+        <p>Dashboard web que unifica los archivos, visualiza con filtros interactivos y permite consultar los datos en lenguaje natural mediante un asistente IA.</p>
+      </div>
     </div>
-    <div class="card">
-      <h3>La solución</h3>
-      <p>Un dashboard web que unifica los 201 archivos, los visualiza con filtros interactivos por fecha y hora, y permite hacerle preguntas en lenguaje natural a los datos mediante un asistente IA.</p>
+    <div>
+      <img src="imgs/img1.png" class="screenshot" alt="Dashboard overview">
+      <p class="img-caption">Vista principal — KPIs + línea de tendencia</p>
     </div>
   </div>
 </div>
@@ -273,29 +307,30 @@
   <div class="tag">app.py</div>
   <div class="accent-line"></div>
   <h2>Interfaz y visualizaciones</h2>
-  <div class="grid-2">
+  <div class="grid-2" style="align-items:start">
     <div>
       <ul>
         <li>Filtros de fecha y hora en sidebar</li>
         <li>4 KPI cards: promedio, pico, hora activa, ratio</li>
-        <li>Tab <strong>Tendencia</strong>: línea de tiempo + media móvil</li>
         <li>Tab <strong>Patrones</strong>: barras por hora, por día de semana, heatmap</li>
         <li>Tab <strong>Por día</strong>: gráfico diario + tabla HTML con hover</li>
       </ul>
-      <p class="muted" style="margin-top:16px">El cache de Streamlit (<code>@st.cache_data</code>) evita recargar los 201 archivos en cada interacción.</p>
-    </div>
-    <pre style="font-size:0.72rem"><span class="fn">@st.cache_data</span>(show_spinner=<span class="st">"Cargando…"</span>)
+      <pre style="font-size:0.72rem;margin-top:14px"><span class="fn">@st.cache_data</span>
 <span class="kw">def</span> <span class="fn">get_data</span>():
     records = <span class="fn">load_all_data</span>()
     summary = <span class="fn">records_to_summary</span>(records)
     <span class="kw">return</span> records, summary
 
-<span class="cm"># Filtro reactivo por fecha y hora</span>
-filtered = [
-    r <span class="kw">for</span> r <span class="kw">in</span> records
+filtered = [r <span class="kw">for</span> r <span class="kw">in</span> records
     <span class="kw">if</span> start_d <= r[<span class="st">"timestamp"</span>].date() <= end_d
-    <span class="kw">and</span> h0 <= r[<span class="st">"timestamp"</span>].hour <= h1
-]</pre>
+    <span class="kw">and</span> h0 <= r[<span class="st">"timestamp"</span>].hour <= h1]</pre>
+    </div>
+    <div>
+      <img src="imgs/img2.png" class="screenshot" alt="Patrones" style="margin-bottom:8px">
+      <p class="img-caption">Tab Patrones — barras por hora, día de semana y heatmap</p>
+      <img src="imgs/img3.png" class="screenshot" style="margin-top:10px" alt="Por día">
+      <p class="img-caption">Tab Por día — promedio diario y tabla de detalle</p>
+    </div>
   </div>
 </div>
 
@@ -304,21 +339,25 @@ filtered = [
   <div class="tag">chatbot.py</div>
   <div class="accent-line"></div>
   <h2>Asistente IA</h2>
-  <p>El chatbot recibe las estadísticas agregadas del dataset como contexto en el system prompt, permitiendo responder preguntas sin exponer datos crudos a la API.</p>
-  <pre><span class="kw">def</span> <span class="fn">build_context</span>(summary):
-    <span class="cm"># Inyecta stats agregadas: avg por hora, por día, por día de semana</span>
-    <span class="kw">return</span> <span class="st">f"""Eres un analista de datos para Rappi.
-Promedio general: </span><span class="nm">{summary['overall_avg']:,.0f}</span><span class="st">
-Hora pico: </span><span class="nm">{summary['peak_hour']}</span><span class="st">:00 ...
-Responde en español de forma concisa."""</span>
-
-<span class="kw">def</span> <span class="fn">chat</span>(messages, summary):
+  <div class="grid-2" style="align-items:start">
+    <div>
+      <p>Las estadísticas agregadas del dataset se inyectan como system prompt, permitiendo responder preguntas sin enviar datos crudos a la API.</p>
+      <pre style="margin-top:14px;font-size:0.72rem"><span class="kw">def</span> <span class="fn">chat</span>(messages, summary):
     client = <span class="fn">Groq</span>(api_key=st.secrets[<span class="st">"GROQ_API_KEY"</span>])
     <span class="kw">return</span> client.chat.completions.<span class="fn">create</span>(
         model=<span class="st">"llama-3.3-70b-versatile"</span>,
-        messages=[{<span class="st">"role"</span>: <span class="st">"system"</span>, <span class="st">"content"</span>: <span class="fn">build_context</span>(summary)}] + messages,
+        messages=[
+            {<span class="st">"role"</span>: <span class="st">"system"</span>,
+             <span class="st">"content"</span>: <span class="fn">build_context</span>(summary)}
+        ] + messages,
         max_tokens=<span class="nm">1024</span>, temperature=<span class="nm">0.3</span>,
     ).choices[<span class="nm">0</span>].message.content</pre>
+    </div>
+    <div>
+      <img src="imgs/img5.png" class="screenshot" alt="Chatbot">
+      <p class="img-caption">Tab Asistente — preguntas sugeridas + respuesta contextual</p>
+    </div>
+  </div>
 </div>
 
 <!-- ─── SLIDE 7: DESPLIEGUE ───────────────────────────────────── -->
